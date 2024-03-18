@@ -1,0 +1,22 @@
+---
+# Where to store data
+dataset_dir: ./data/mnist/data
+
+# How many clients to create
+num_clients: 25
+
+# Samples per small client
+small_size: 16
+
+# Samples per large client
+large_size: 2400
+
+# How large should the test set of each client
+# be relative to the train set
+val_ratio: 0.5
+
+# Seed for partition generation
+seed: 1337
+
+num_samples: 16
+

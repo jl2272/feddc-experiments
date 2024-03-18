@@ -1,0 +1,6 @@
+---
+name: FedDCW_5
+
+init:
+  _target_: project.fed.server.strategy.strategy.FedDCW
+  aggregation_period: 5

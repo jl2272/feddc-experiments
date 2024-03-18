@@ -1,0 +1,6 @@
+---
+name: FedDC
+
+init:
+  _target_: project.fed.server.strategy.strategy.FedDC
+  aggregation_period: 10

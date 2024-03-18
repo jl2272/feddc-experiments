@@ -21,6 +21,18 @@ from project.task.mnist_classification.dispatch import (
 from project.task.mnist_classification.dispatch import (
     dispatch_train as dispatch_mnist_train,
 )
+from project.task.mnist_small_samples.dispatch import (
+    dispatch_data as dispatch_small_mnist_data,
+)
+from project.task.mnist_small_samples_centralised.dispatch import (
+    dispatch_data as dispatch_small_mnist_data_centralised,
+)
+from project.task.mnist_small_and_large.dispatch import (
+    dispatch_data as dispatch_small_and_large_mnist_data
+)
+from project.task.mnist_small_and_large_centralised.dispatch import (
+    dispatch_data as dispatch_small_and_large_mnist_data_centralised
+)
 from project.types.common import ConfigStructure, DataStructure, TrainStructure
 
 
@@ -85,6 +97,10 @@ def dispatch_data(cfg: DictConfig, **kwargs: Any) -> DataStructure:
     task_data_dependent_functions: list[Callable[..., DataStructure | None]] = [
         dispatch_mnist_data,
         dispatch_default_data,
+        dispatch_small_mnist_data,
+        dispatch_small_mnist_data_centralised,
+        dispatch_small_and_large_mnist_data,
+        dispatch_small_and_large_mnist_data_centralised
     ]
 
     # Match the first function which does not return None
