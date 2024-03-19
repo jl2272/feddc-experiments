@@ -1,3 +1,5 @@
+"""Create the small samples dataset."""
+
 from torch.utils.data import DataLoader, random_split
 from project.task.default.dataset import (
     ClientDataloaderConfig as DefaultClientDataloaderConfig,
@@ -22,7 +24,10 @@ import random
 
 from torch.utils.data import ConcatDataset, Subset
 from torchvision.datasets import MNIST
-from project.task.mnist_classification.dataset_preparation import _download_data, _balance_classes
+from project.task.mnist_classification.dataset_preparation import (
+    _download_data,
+    _balance_classes,
+)
 
 # Use defaults for this very simple dataset
 # Requires only batch size
@@ -31,13 +36,13 @@ FedDataloaderConfig = DefaultFedDataloaderConfig
 
 
 def _partition_data(
-        trainset: MNIST,
-        testset: MNIST,
-        num_clients: int,
-        iid: bool,
-        seed: int,
-        balance: bool,
-        num_samples: int,
+    trainset: MNIST,
+    testset: MNIST,
+    num_clients: int,
+    iid: bool,
+    seed: int,
+    balance: bool,
+    num_samples: int,
 ) -> tuple[list[Subset] | list[ConcatDataset], MNIST]:
     """Split training set into iid or non iid partitions to simulate the federated.
 
@@ -70,14 +75,18 @@ def _partition_data(
         trainset = _balance_classes(trainset, seed)
 
     if len(trainset) < num_clients * num_samples:
-        raise ValueError("There is not enough data for this number of samples per client")
+        raise ValueError(
+            "There is not enough data for this number of samples per client"
+        )
 
     random.seed(seed)
     if iid:
         datasets = []
-        random_indices = random.sample(range(len(trainset)), num_clients*num_samples)
+        random_indices = random.sample(range(len(trainset)), num_clients * num_samples)
         for i in range(num_clients):
-            indices = random_indices[(i*num_samples):(i*num_samples)+num_samples]
+            indices = random_indices[
+                (i * num_samples) : (i * num_samples) + num_samples
+            ]
             datasets.append(Subset(trainset, indices))
     else:
         shard_size = num_samples
@@ -115,7 +124,7 @@ def get_dataloader_generators(
     seed: int = 42,
     balance: bool = False,
     num_samples: int = 64,
-    val_ratio: float = 0.1
+    val_ratio: float = 0.1,
 ) -> tuple[ClientDataloaderGen, FedDataloaderGen]:
     """Return a function that loads a client's dataset.
 
@@ -155,7 +164,7 @@ def get_dataloader_generators(
     # 1. fed_test_set = centralized test set like MNIST
     # 2. fed_test_set = concatenation of all test sets of all clients
     # 3. fed_test_set = test sets of reserved unseen clients
-    client_datasets, fed_test_set = _partition_data(
+    client_datasets, _ = _partition_data(
         trainset,
         testset,
         num_clients,
@@ -179,6 +188,7 @@ def get_dataloader_generators(
         )
         client_train.append(ds_train)
         client_test.append(ds_val)
+
     def get_client_dataloader(
         cid: CID, test: bool, _config: dict, rng_tuple: IsolatedRNG
     ) -> DataLoader:
@@ -205,11 +215,7 @@ def get_dataloader_generators(
         del _config
 
         torch_cpu_generator = rng_tuple[3]
-
-        if test:
-            dataset = client_test[int(cid)]
-        else:
-            dataset = client_train[int(cid)]
+        dataset = client_test[int(cid)] if test else client_train[int(cid)]
         return DataLoader(
             dataset,
             batch_size=config.batch_size,

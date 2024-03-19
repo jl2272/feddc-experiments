@@ -1,3 +1,4 @@
+"""Create the centralised small and large dataset."""
 
 from torch.utils.data import DataLoader, random_split
 
@@ -24,13 +25,14 @@ from project.task.mnist_small_and_large.dataset import _partition_data
 ClientDataloaderConfig = DefaultClientDataloaderConfig
 FedDataloaderConfig = DefaultFedDataloaderConfig
 
+
 def get_dataloader_generators(
     dataset_dir: Path,
     num_clients: int = 25,
     seed: int = 42,
     val_ratio: float = 0.1,
     small_size: int = 16,
-    large_size: int = 1200
+    large_size: int = 1200,
 ) -> tuple[ClientDataloaderGen, FedDataloaderGen]:
     """Return a function that loads a client's dataset.
 
@@ -64,13 +66,8 @@ def get_dataloader_generators(
     # 1. fed_test_set = centralized test set like MNIST
     # 2. fed_test_set = concatenation of all test sets of all clients
     # 3. fed_test_set = test sets of reserved unseen clients
-    client_datasets, fed_test_set = _partition_data(
-        trainset,
-        testset,
-        num_clients,
-        seed,
-        small_size,
-        large_size
+    client_datasets, _ = _partition_data(
+        trainset, testset, num_clients, seed, small_size, large_size
     )
 
     client_train = []
@@ -91,7 +88,7 @@ def get_dataloader_generators(
     client_test = ConcatDataset(client_test)
 
     def get_client_dataloader(
-            cid: CID, test: bool, _config: dict, rng_tuple: IsolatedRNG
+        cid: CID, test: bool, _config: dict, rng_tuple: IsolatedRNG
     ) -> DataLoader:
         """Return a DataLoader for a client's dataset.
 
@@ -116,11 +113,7 @@ def get_dataloader_generators(
         del _config
 
         torch_cpu_generator = rng_tuple[3]
-
-        if test:
-            dataset = client_test
-        else:
-            dataset = client_train
+        dataset = client_test if test else client_train
         return DataLoader(
             dataset,
             batch_size=config.batch_size,
@@ -129,7 +122,7 @@ def get_dataloader_generators(
         )
 
     def get_federated_dataloader(
-            test: bool, _config: dict, rng_tuple: IsolatedRNG
+        test: bool, _config: dict, rng_tuple: IsolatedRNG
     ) -> DataLoader:
         """Return a DataLoader for federated train/test sets.
 

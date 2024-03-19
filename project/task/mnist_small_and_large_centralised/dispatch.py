@@ -1,3 +1,5 @@
+"""Dispatch the centralised small and large dataset."""
+
 from pathlib import Path
 from typing import Any
 
@@ -7,7 +9,9 @@ from project.task.default.dispatch import (
     dispatch_config as dispatch_default_config,
     init_working_dir as init_working_dir_default,
 )
-from project.task.mnist_small_and_large_centralised.dataset import get_dataloader_generators
+from project.task.mnist_small_and_large_centralised.dataset import (
+    get_dataloader_generators,
+)
 from project.task.mnist_classification.models import get_logistic_regression, get_net
 from project.types.common import DataStructure
 
@@ -68,7 +72,7 @@ def dispatch_data(cfg: DictConfig, **kwargs: Any) -> DataStructure | None:
             seed=seed,
             val_ratio=val_ratio,
             small_size=small_size,
-            large_size=large_size
+            large_size=large_size,
         )
 
         # Case insensitive matches

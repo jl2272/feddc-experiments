@@ -28,10 +28,10 @@ from project.task.mnist_small_samples_centralised.dispatch import (
     dispatch_data as dispatch_small_mnist_data_centralised,
 )
 from project.task.mnist_small_and_large.dispatch import (
-    dispatch_data as dispatch_small_and_large_mnist_data
+    dispatch_data as dispatch_small_and_large_mnist_data,
 )
 from project.task.mnist_small_and_large_centralised.dispatch import (
-    dispatch_data as dispatch_small_and_large_mnist_data_centralised
+    dispatch_data as dispatch_small_and_large_mnist_data_centralised,
 )
 from project.types.common import ConfigStructure, DataStructure, TrainStructure
 
@@ -100,7 +100,7 @@ def dispatch_data(cfg: DictConfig, **kwargs: Any) -> DataStructure:
         dispatch_small_mnist_data,
         dispatch_small_mnist_data_centralised,
         dispatch_small_and_large_mnist_data,
-        dispatch_small_and_large_mnist_data_centralised
+        dispatch_small_and_large_mnist_data_centralised,
     ]
 
     # Match the first function which does not return None

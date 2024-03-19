@@ -1,3 +1,5 @@
+"""Dispatch the small and large dataset."""
+
 from pathlib import Path
 from typing import Any
 
@@ -68,7 +70,7 @@ def dispatch_data(cfg: DictConfig, **kwargs: Any) -> DataStructure | None:
             seed=seed,
             val_ratio=val_ratio,
             small_size=small_size,
-            large_size=large_size
+            large_size=large_size,
         )
 
         # Case insensitive matches

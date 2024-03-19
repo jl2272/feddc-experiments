@@ -1,3 +1,5 @@
+"""Dispatch the small samples dataset."""
+
 from pathlib import Path
 from typing import Any
 
@@ -70,7 +72,7 @@ def dispatch_data(cfg: DictConfig, **kwargs: Any) -> DataStructure | None:
             balance=balance,
             num_samples=num_samples,
             iid=iid,
-            val_ratio=val_ratio
+            val_ratio=val_ratio,
         )
 
         # Case insensitive matches

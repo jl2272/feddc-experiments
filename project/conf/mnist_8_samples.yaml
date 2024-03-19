@@ -21,7 +21,6 @@ hydra:
       fed.seed: 1336,1337,1338
       dataset.iid: false, true
 
-
 # Working dir to save temporary files to
 # If null, defaults to hydra_dir/working
 working_dir: null

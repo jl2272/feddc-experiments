@@ -1,6 +1,6 @@
 """A custom strategy."""
+
 from logging import WARNING, log
-from typing import Dict, List, Optional, Tuple, Union
 
 from flwr.common import (
     FitIns,
@@ -8,14 +8,13 @@ from flwr.common import (
     Parameters,
     Scalar,
     ndarrays_to_parameters,
-    parameters_to_ndarrays
+    parameters_to_ndarrays,
 )
 from flwr.server.client_manager import ClientManager
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
 from flwr.server.strategy.aggregate import aggregate
-import numpy as np
 
 
 class FedDC(FedAvg):
@@ -28,11 +27,7 @@ class FedDC(FedAvg):
     """
 
     # pylint: disable=too-many-arguments,too-many-instance-attributes, line-too-long
-    def __init__(
-            self,
-            aggregation_period=5,
-            **kwargs
-    ) -> None:
+    def __init__(self, aggregation_period: int = 5, **kwargs) -> None:
         super().__init__(**kwargs)
         self.aggregation_period = aggregation_period
         self.stored_parameters = None
@@ -41,9 +36,10 @@ class FedDC(FedAvg):
         """Compute a string representation of the strategy."""
         rep = "FedDC"
         return rep
+
     def configure_fit(
-            self, server_round: int, parameters: Parameters, client_manager: ClientManager
-    ) -> List[Tuple[ClientProxy, FitIns]]:
+        self, server_round: int, parameters: Parameters, client_manager: ClientManager
+    ) -> list[tuple[ClientProxy, FitIns]]:
         """Configure the next round of training."""
         config = {}
         if self.on_fit_config_fn is not None:
@@ -59,33 +55,35 @@ class FedDC(FedAvg):
         )
 
         # Return client/config pairs
-        if (server_round - 1) % self.aggregation_period == 0 or self.stored_parameters is None:
+        if (
+            server_round - 1
+        ) % self.aggregation_period == 0 or self.stored_parameters is None:
 
             # Initial parameters or aggregated parameters
             fit_ins = FitIns(parameters, config)
             return [(client, fit_ins) for client in clients]
         else:
-            # Distributed parameters. No shuffle is needed since the client parameters in stored_parameters are
-            # randomly sampled.
-            return [(client, FitIns(self.stored_parameters[i], config)) for i, client in enumerate(clients)]
+            # Distributed parameters. No shuffle is needed since the client parameters
+            # in stored_parameters are randomly sampled.
+            return [
+                (client, FitIns(self.stored_parameters[i], config))
+                for i, client in enumerate(clients)
+            ]
 
     def aggregate_fit(
-            self,
-            server_round: int,
-            results: List[Tuple[ClientProxy, FitRes]],
-            failures: List[Union[Tuple[ClientProxy, FitRes], BaseException]],
-    ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
-        """Aggregate fit results using weighted average."""
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, FitRes]],
+        failures: list[tuple[ClientProxy, FitRes] | BaseException],
+    ) -> tuple[Parameters | None, dict[str, Scalar]]:
+        """Aggregate fit results using unweighted average."""
         if not results:
             return None, {}
         # Do not aggregate if there are failures and failures are not accepted
         if not self.accept_failures and failures:
             return None, {}
 
-        weights = [
-            parameters_to_ndarrays(fit_res.parameters)
-            for _, fit_res in results
-        ]
+        weights = [parameters_to_ndarrays(fit_res.parameters) for _, fit_res in results]
 
         # Save the parameters after each round of training to be redistributed.
         self.stored_parameters = [fit_res.parameters for _, fit_res in results]
@@ -124,11 +122,7 @@ class FedDCW(FedAvg):
     """
 
     # pylint: disable=too-many-arguments,too-many-instance-attributes, line-too-long
-    def __init__(
-            self,
-            aggregation_period=5,
-            **kwargs
-    ) -> None:
+    def __init__(self, aggregation_period: int = 5, **kwargs) -> None:
         super().__init__(**kwargs)
         self.aggregation_period = aggregation_period
         self.stored_parameters = None
@@ -138,9 +132,10 @@ class FedDCW(FedAvg):
         """Compute a string representation of the strategy."""
         rep = "FedDCW"
         return rep
+
     def configure_fit(
-            self, server_round: int, parameters: Parameters, client_manager: ClientManager
-    ) -> List[Tuple[ClientProxy, FitIns]]:
+        self, server_round: int, parameters: Parameters, client_manager: ClientManager
+    ) -> list[tuple[ClientProxy, FitIns]]:
         """Configure the next round of training."""
         config = {}
         if self.on_fit_config_fn is not None:
@@ -156,25 +151,33 @@ class FedDCW(FedAvg):
         )
 
         # Return client/config pairs
-        if (server_round - 1) % self.aggregation_period == 0 or self.stored_parameters is None:
+        if (
+            server_round - 1
+        ) % self.aggregation_period == 0 or self.stored_parameters is None:
+            # Reset weighted average count
+            self.sample_counts = [0] * len(clients)
 
             # Initial parameters or aggregated parameters
             fit_ins = FitIns(parameters, config)
-            self.sample_counts = [0]*len(clients)
             return [(client, fit_ins) for client in clients]
         else:
-            # Distributed parameters. No shuffle is needed since the client parameters in stored_parameters are
-            # randomly sampled.
+            # Initialise count for weighted average
             if self.sample_counts is None:
-                self.sample_counts = [0]*len(clients)
-            return [(client, FitIns(self.stored_parameters[i], config)) for i, client in enumerate(clients)]
+                self.sample_counts = [0] * len(clients)
+
+            # Distributed parameters. No shuffle is needed since the client parameters
+            # in stored_parameters are randomly sampled.
+            return [
+                (client, FitIns(self.stored_parameters[i], config))
+                for i, client in enumerate(clients)
+            ]
 
     def aggregate_fit(
-            self,
-            server_round: int,
-            results: List[Tuple[ClientProxy, FitRes]],
-            failures: List[Union[Tuple[ClientProxy, FitRes], BaseException]],
-    ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, FitRes]],
+        failures: list[tuple[ClientProxy, FitRes] | BaseException],
+    ) -> tuple[Parameters | None, dict[str, Scalar]]:
         """Aggregate fit results using weighted average."""
         if not results:
             return None, {}
@@ -190,7 +193,7 @@ class FedDCW(FedAvg):
         # Weighted average
         weights_results = [
             (parameters_to_ndarrays(fit_res.parameters), self.sample_counts[i])
-            for i, (_,fit_res) in enumerate(results)
+            for i, (_, fit_res) in enumerate(results)
         ]
         averaged_parameters = aggregate(weights_results)
 

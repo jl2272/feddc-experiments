@@ -1,4 +1,5 @@
 """MNIST small and large partitioning."""
+
 import torch
 from torch.utils.data import DataLoader, random_split
 
@@ -20,7 +21,6 @@ from typing import cast
 
 
 import numpy as np
-import torch
 import random
 
 from torch.utils.data import ConcatDataset, Subset
@@ -34,12 +34,12 @@ FedDataloaderConfig = DefaultFedDataloaderConfig
 
 
 def _partition_data(
-        trainset: MNIST,
-        testset: MNIST,
-        num_clients: int,
-        seed: int,
-        small_size: int,
-        large_size: int
+    trainset: MNIST,
+    testset: MNIST,
+    num_clients: int,
+    seed: int,
+    small_size: int,
+    large_size: int,
 ) -> tuple[list[Subset] | list[ConcatDataset], MNIST]:
     """Split training set into iid and non-iid data.
 
@@ -56,10 +56,9 @@ def _partition_data(
         A list of dataset for each client and a single dataset to be used for testing
         the model.
     """
-
     random.seed(seed)
-    large_clients = (int) (0.2*num_clients)
-    small_clients = num_clients-large_clients
+    large_clients = (int)(0.2 * num_clients)
+    small_clients = num_clients - large_clients
     shard_size = small_size
     idxs = trainset.targets.argsort()
     sorted_data = Subset(
@@ -84,15 +83,15 @@ def _partition_data(
                 ),
             ),
         )
-        for pos in np.arange(shard_size*start_positions[idx], shard_size*(start_positions[idx]+1)):
+        for pos in np.arange(
+            shard_size * start_positions[idx], shard_size * (start_positions[idx] + 1)
+        ):
             removed_data.append(pos)
 
-    removed_data=np.array(removed_data)
-    large_range = range(len(trainset))
-    large_range = np.setdiff1d(large_range, removed_data)
+    large_range = np.setdiff1d(range(len(trainset)), np.array(removed_data))
     random_indices = random.sample(list(large_range), large_clients * large_size)
     for i in range(large_clients):
-        indices = random_indices[(i * large_size):(i * large_size) + large_size]
+        indices = random_indices[(i * large_size) : (i * large_size) + large_size]
         datasets.append(Subset(trainset, indices))
     random.shuffle(datasets)
     return datasets, testset
@@ -104,7 +103,7 @@ def get_dataloader_generators(
     seed: int = 42,
     val_ratio: float = 0.1,
     small_size: int = 16,
-    large_size: int = 1200
+    large_size: int = 1200,
 ) -> tuple[ClientDataloaderGen, FedDataloaderGen]:
     """Return a function that loads a client's dataset.
 
@@ -138,13 +137,8 @@ def get_dataloader_generators(
     # 1. fed_test_set = centralized test set like MNIST
     # 2. fed_test_set = concatenation of all test sets of all clients
     # 3. fed_test_set = test sets of reserved unseen clients
-    client_datasets, fed_test_set = _partition_data(
-        trainset,
-        testset,
-        num_clients,
-        seed,
-        small_size,
-        large_size
+    client_datasets, _ = _partition_data(
+        trainset, testset, num_clients, seed, small_size, large_size
     )
 
     client_train = []
@@ -161,6 +155,7 @@ def get_dataloader_generators(
         )
         client_train.append(ds_train)
         client_test.append(ds_val)
+
     def get_client_dataloader(
         cid: CID, test: bool, _config: dict, rng_tuple: IsolatedRNG
     ) -> DataLoader:
@@ -187,11 +182,7 @@ def get_dataloader_generators(
         del _config
 
         torch_cpu_generator = rng_tuple[3]
-
-        if test:
-            dataset = client_test[int(cid)]
-        else:
-            dataset = client_train[int(cid)]
+        dataset = client_test[int(cid)] if test else client_train[int(cid)]
         return DataLoader(
             dataset,
             batch_size=config.batch_size,
