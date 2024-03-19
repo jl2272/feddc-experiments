@@ -1,11 +1,4 @@
-"""MNIST dataset utilities for federated learning."""
-import random
-from pathlib import Path
-
-import torch
-from torch.utils.data import DataLoader, Subset, ConcatDataset, random_split
-from torchvision.datasets import MNIST
-
+from torch.utils.data import DataLoader, random_split
 from project.task.default.dataset import (
     ClientDataloaderConfig as DefaultClientDataloaderConfig,
 )

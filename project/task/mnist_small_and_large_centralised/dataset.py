@@ -1,10 +1,5 @@
-"""MNIST dataset utilities for federated learning."""
-import random
-from pathlib import Path
 
-import torch
-from torch.utils.data import DataLoader, Subset, ConcatDataset, random_split
-from torchvision.datasets import MNIST
+from torch.utils.data import DataLoader, random_split
 
 from project.task.default.dataset import (
     ClientDataloaderConfig as DefaultClientDataloaderConfig,
@@ -18,19 +13,12 @@ from project.types.common import (
     FedDataloaderGen,
     IsolatedRNG,
 )
-from collections.abc import Sequence
 from pathlib import Path
-from typing import cast
-
-
-import numpy as np
 import torch
-import random
-
-from torch.utils.data import ConcatDataset, Subset
-from torchvision.datasets import MNIST
-from project.task.mnist_classification.dataset_preparation import _download_data, _balance_classes
+from torch.utils.data import ConcatDataset
+from project.task.mnist_classification.dataset_preparation import _download_data
 from project.task.mnist_small_and_large.dataset import _partition_data
+
 # Use defaults for this very simple dataset
 # Requires only batch size
 ClientDataloaderConfig = DefaultClientDataloaderConfig

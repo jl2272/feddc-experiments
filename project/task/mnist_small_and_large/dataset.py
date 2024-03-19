@@ -1,10 +1,6 @@
-"""MNIST dataset utilities for federated learning."""
-import random
-from pathlib import Path
-
+"""MNIST small and large partitioning."""
 import torch
-from torch.utils.data import DataLoader, Subset, ConcatDataset, random_split
-from torchvision.datasets import MNIST
+from torch.utils.data import DataLoader, random_split
 
 from project.task.default.dataset import (
     ClientDataloaderConfig as DefaultClientDataloaderConfig,
@@ -45,9 +41,7 @@ def _partition_data(
         small_size: int,
         large_size: int
 ) -> tuple[list[Subset] | list[ConcatDataset], MNIST]:
-    """Split training set into iid or non iid partitions to simulate the federated.
-
-    setting.
+    """Split training set into iid and non-iid data.
 
     Parameters
     ----------
