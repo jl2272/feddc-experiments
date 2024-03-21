@@ -15,6 +15,7 @@ from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
 from flwr.server.strategy.aggregate import aggregate
+from typing import Any
 
 
 class FedDC(FedAvg):
@@ -27,10 +28,10 @@ class FedDC(FedAvg):
     """
 
     # pylint: disable=too-many-arguments,too-many-instance-attributes, line-too-long
-    def __init__(self, aggregation_period: int = 5, **kwargs) -> None:
+    def __init__(self, aggregation_period: int = 5, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.aggregation_period = aggregation_period
-        self.stored_parameters = None
+        self.stored_parameters: list[Parameters] | None = None
 
     def __repr__(self) -> str:
         """Compute a string representation of the strategy."""
@@ -122,11 +123,11 @@ class FedDCW(FedAvg):
     """
 
     # pylint: disable=too-many-arguments,too-many-instance-attributes, line-too-long
-    def __init__(self, aggregation_period: int = 5, **kwargs) -> None:
+    def __init__(self, aggregation_period: int = 5, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.aggregation_period = aggregation_period
-        self.stored_parameters = None
-        self.sample_counts = None
+        self.stored_parameters: list[Parameters] | None = None
+        self.sample_counts: list[int] | None = None
 
     def __repr__(self) -> str:
         """Compute a string representation of the strategy."""
@@ -161,10 +162,6 @@ class FedDCW(FedAvg):
             fit_ins = FitIns(parameters, config)
             return [(client, fit_ins) for client in clients]
         else:
-            # Initialise count for weighted average
-            if self.sample_counts is None:
-                self.sample_counts = [0] * len(clients)
-
             # Distributed parameters. No shuffle is needed since the client parameters
             # in stored_parameters are randomly sampled.
             return [
@@ -187,6 +184,11 @@ class FedDCW(FedAvg):
 
         # Save the parameters after each round of training to be redistributed.
         self.stored_parameters = [fit_res.parameters for _, fit_res in results]
+
+        # Initialise count for weighted average
+        if self.sample_counts is None:
+            self.sample_counts = [0] * len(results)
+
         for i, count in enumerate([fit_res.num_examples for _, fit_res in results]):
             self.sample_counts[i] += count
 

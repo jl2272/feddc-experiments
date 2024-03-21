@@ -215,6 +215,8 @@ def get_dataloader_generators(
         del _config
 
         torch_cpu_generator = rng_tuple[3]
+        if isinstance(cid, Path):
+            raise TypeError(f"Unsupported CID type: {type(cid)}")
         dataset = client_test[int(cid)] if test else client_train[int(cid)]
         return DataLoader(
             dataset,

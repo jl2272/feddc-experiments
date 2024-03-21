@@ -19,7 +19,6 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import cast
 
-
 import numpy as np
 import random
 
@@ -69,7 +68,7 @@ def _partition_data(
 
     max_start_shard = len(sorted_data) // shard_size
     start_positions = random.sample(range(max_start_shard), small_clients)
-    removed_data = []
+    removed_data: list[int] = []
     for idx in range(small_clients):
         datasets.append(
             Subset(
@@ -83,12 +82,15 @@ def _partition_data(
                 ),
             ),
         )
-        for pos in np.arange(
-            shard_size * start_positions[idx], shard_size * (start_positions[idx] + 1)
-        ):
-            removed_data.append(pos)
+        removed_data + list(
+            np.arange(
+                shard_size * start_positions[idx],
+                shard_size * (start_positions[idx] + 1),
+            )
+        )
 
-    large_range = np.setdiff1d(range(len(trainset)), np.array(removed_data))
+    range_array = np.arange(len(trainset))
+    large_range = np.setdiff1d(range_array, np.array(removed_data))
     random_indices = random.sample(list(large_range), large_clients * large_size)
     for i in range(large_clients):
         indices = random_indices[(i * large_size) : (i * large_size) + large_size]
@@ -182,6 +184,8 @@ def get_dataloader_generators(
         del _config
 
         torch_cpu_generator = rng_tuple[3]
+        if isinstance(cid, Path):
+            raise TypeError(f"Unsupported CID type: {type(cid)}")
         dataset = client_test[int(cid)] if test else client_train[int(cid)]
         return DataLoader(
             dataset,
