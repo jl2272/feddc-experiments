@@ -107,8 +107,9 @@ def train(  # pylint: disable=too-many-arguments
             optimizer.step()
 
     return len(cast(Sized, trainloader.dataset)), {
-        "train_loss": final_epoch_per_sample_loss
-        / len(cast(Sized, trainloader.dataset)),
+        "train_loss": (
+            final_epoch_per_sample_loss / len(cast(Sized, trainloader.dataset))
+        ),
         "train_accuracy": float(num_correct) / len(cast(Sized, trainloader.dataset)),
     }
 
